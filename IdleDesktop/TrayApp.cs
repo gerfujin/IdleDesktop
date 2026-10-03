@@ -9,6 +9,7 @@ internal sealed class TrayApp : ApplicationContext
     private static readonly TimeSpan IdleThreshold = TimeSpan.FromSeconds(30);
 
     private readonly NotifyIcon _trayIcon;
+    private readonly Icon? _appIcon;
     private readonly System.Windows.Forms.Timer _timer;
     private DateTime _lastLog = DateTime.MinValue;
     private bool _iconsHidden;
@@ -18,9 +19,16 @@ internal sealed class TrayApp : ApplicationContext
         var menu = new ContextMenuStrip();
         menu.Items.Add("Exit", null, (_, _) => Exit());
 
+        // Request the small-icon size so the matching frame is picked instead of a downscaled large one.
+        using (var stream = typeof(TrayApp).Assembly.GetManifestResourceStream("app.ico"))
+        {
+            if (stream != null)
+                _appIcon = new Icon(stream, SystemInformation.SmallIconSize);
+        }
+
         _trayIcon = new NotifyIcon
         {
-            Icon = SystemIcons.Application,
+            Icon = _appIcon ?? SystemIcons.Application,
             Text = "IdleDesktop",
             Visible = true,
             ContextMenuStrip = menu
@@ -96,6 +104,7 @@ internal sealed class TrayApp : ApplicationContext
         _timer.Stop();
         _trayIcon.Visible = false;
         _trayIcon.Dispose();
+        _appIcon?.Dispose();
         ExitThread();
     }
 }
