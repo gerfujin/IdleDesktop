@@ -12,6 +12,7 @@
 
     <ItemGroup>
         <EmbeddedResource Include="app.ico" LogicalName="app.ico" />
+        <InternalsVisibleTo Include="IdleDesktop.Tests" />
     </ItemGroup>
 
 </Project>
