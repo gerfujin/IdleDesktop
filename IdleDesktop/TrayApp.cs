@@ -41,18 +41,19 @@ internal sealed class TrayApp : ApplicationContext
     {
         var state = SystemState.Read();
 
-        if (!_iconsHidden && state.Idle >= IdleThreshold && IsDesktopClass(state.ForegroundClass))
+        var action = IdleLogic.Decide(state.Idle, IdleThreshold, state.ForegroundClass, _iconsHidden);
+        switch (action)
         {
-            DesktopIcons.Hide();
-            _iconsHidden = true;
-            Debug.WriteLine("icons hidden");
-        }
-        else if (_iconsHidden && state.Idle < IdleThreshold)
-        {
-            // Any input brings the icons back, regardless of which window is active.
-            DesktopIcons.Show();
-            _iconsHidden = false;
-            Debug.WriteLine("icons shown");
+            case IconAction.Hide:
+                DesktopIcons.Hide();
+                _iconsHidden = true;
+                Debug.WriteLine("icons hidden");
+                break;
+            case IconAction.Show:
+                DesktopIcons.Show();
+                _iconsHidden = false;
+                Debug.WriteLine("icons shown");
+                break;
         }
 
         var now = DateTime.Now;
@@ -62,12 +63,7 @@ internal sealed class TrayApp : ApplicationContext
 
         Debug.WriteLine(
             $"[{now:HH:mm:ss}] idle={(long)state.Idle.TotalMilliseconds}ms " +
-            $"fg={state.ForegroundClass} desktop={IsDesktopClass(state.ForegroundClass)} hidden={_iconsHidden}");
-    }
-
-    private static bool IsDesktopClass(string className)
-    {
-        return className is "Progman" or "WorkerW" or "Shell_TrayWnd";
+            $"fg={state.ForegroundClass} desktop={IdleLogic.IsDesktopClass(state.ForegroundClass)} hidden={_iconsHidden}");
     }
 
     private void Exit()
