@@ -6,7 +6,7 @@ internal static class IdleLogic
 {
     public static IconAction Decide(TimeSpan idle, TimeSpan threshold, string foregroundClass, bool iconsHidden)
     {
-        if (!iconsHidden && idle >= threshold && IsDesktopClass(foregroundClass))
+        if (!iconsHidden && idle > threshold && IsDesktopClass(foregroundClass))
             return IconAction.Hide;
 
         // Any input brings the icons back, regardless of which window is active.
