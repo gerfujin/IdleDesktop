@@ -7,13 +7,14 @@ A tiny Windows tray utility that hides desktop icons when you sit idle on the de
 ## Features
 
 - Hides desktop icons after 30 seconds of inactivity while the desktop (or taskbar) is the active window
-- Restores icons instantly on any mouse or keyboard input, whatever window is active
-- Runs quietly in the system tray; **Exit** in the tray menu restores icons before quitting
+- Hides the mouse cursor together with the icons
+- Restores icons and cursor instantly on any mouse or keyboard input, whatever window is active
+- Runs quietly in the system tray; **Exit** in the tray menu restores icons and cursor before quitting
 - Only one instance can run at a time
 
 ## How it works
 
-A WinForms timer ticks every 250 ms. On each tick the app reads the idle time with `GetLastInputInfo` and checks the foreground window with `GetForegroundWindow` + `GetClassName`. The desktop counts as active when the class is `Progman`, `WorkerW` or `Shell_TrayWnd`. Icons are hidden and shown by calling `ShowWindow` on Explorer's `SysListView32` window, found inside `SHELLDLL_DefView`. The tray icon is a standard `NotifyIcon`.
+A WinForms timer ticks every 250 ms. On each tick the app reads the idle time with `GetLastInputInfo` and checks the foreground window with `GetForegroundWindow` + `GetClassName`. The desktop counts as active when the class is `Progman`, `WorkerW` or `Shell_TrayWnd`. Icons are hidden and shown by calling `ShowWindow` on Explorer's `SysListView32` window, found inside `SHELLDLL_DefView`. The cursor is hidden system-wide by replacing the standard cursors with a transparent one via `SetSystemCursor`, and restored by reloading the user's cursor scheme with `SystemParametersInfo(SPI_SETCURSORS)`. The tray icon is a standard `NotifyIcon`.
 
 ## Requirements
 
@@ -60,6 +61,7 @@ The program's decisions (when to hide and show icons, which windows count as the
 
 - Clicking an empty area of the desktop while other windows are open also counts as being "on the desktop".
 - If the process is killed forcibly, icons may stay hidden. To restore them, restart Windows Explorer in Task Manager, or start IdleDesktop again and choose **Exit** in the tray menu.
+- If the process is killed forcibly (Task Manager, Stop in a debugger), the cursor stays invisible until IdleDesktop is started again (Win → type `IdleDesktop` → Enter) or you sign out and back in.
 - Windows only.
 
 ## License

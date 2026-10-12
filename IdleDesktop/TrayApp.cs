@@ -2,6 +2,10 @@ using System.Diagnostics;
 
 namespace IdleDesktop;
 
+/// <summary>
+/// Tray application: polls <see cref="SystemState"/> on a timer, asks <see cref="IdleLogic"/> what to do,
+/// and hides or shows the desktop icons and cursor via <see cref="DesktopIcons"/> and <see cref="SystemCursor"/>.
+/// </summary>
 internal sealed class TrayApp : ApplicationContext
 {
     private static readonly TimeSpan IdleThreshold = TimeSpan.FromSeconds(30);
@@ -46,11 +50,13 @@ internal sealed class TrayApp : ApplicationContext
         {
             case IconAction.Hide:
                 DesktopIcons.Hide();
+                SystemCursor.Hide();
                 _iconsHidden = true;
                 Debug.WriteLine("icons hidden");
                 break;
             case IconAction.Show:
                 DesktopIcons.Show();
+                SystemCursor.Show();
                 _iconsHidden = false;
                 Debug.WriteLine("icons shown");
                 break;
@@ -69,6 +75,7 @@ internal sealed class TrayApp : ApplicationContext
     private void Exit()
     {
         DesktopIcons.Show();
+        SystemCursor.Show();
         _timer.Stop();
         _trayIcon.Visible = false;
         _trayIcon.Dispose();

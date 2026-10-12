@@ -2,6 +2,10 @@ namespace IdleDesktop;
 
 internal enum IconAction { None, Hide, Show }
 
+/// <summary>
+/// Pure decision logic: when to hide or show the icons, what counts as the desktop, and tick arithmetic.
+/// Makes no Windows calls and is called by <see cref="TrayApp"/> and <see cref="SystemState"/>.
+/// </summary>
 internal static class IdleLogic
 {
     public static IconAction Decide(TimeSpan idle, TimeSpan threshold, string foregroundClass, bool iconsHidden)

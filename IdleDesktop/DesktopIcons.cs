@@ -2,6 +2,9 @@ using System.Diagnostics;
 
 namespace IdleDesktop;
 
+/// <summary>
+/// Hides and shows the desktop icon list by finding Explorer's window and calling <see cref="NativeMethods"/>.
+/// </summary>
 internal static class DesktopIcons
 {
     public static void Hide() => SetVisible(NativeMethods.SW_HIDE);

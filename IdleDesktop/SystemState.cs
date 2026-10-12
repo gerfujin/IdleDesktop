@@ -3,6 +3,10 @@ using System.Text;
 
 namespace IdleDesktop;
 
+/// <summary>
+/// Snapshot of the idle time and foreground window class, read through <see cref="NativeMethods"/>
+/// (the idle calculation uses <see cref="IdleLogic.ElapsedMs"/>).
+/// </summary>
 internal readonly record struct SystemState(TimeSpan Idle, string ForegroundClass)
 {
     public static SystemState Read() => new(GetIdleTime(), GetForegroundClassName());
