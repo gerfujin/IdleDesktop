@@ -9,7 +9,8 @@ namespace IdleDesktop;
 /// </summary>
 internal sealed class TrayApp : ApplicationContext
 {
-    private readonly AppSettings _settings;
+    private AppSettings _settings;
+    private SettingsForm? _settingsForm;
     private readonly NotifyIcon _trayIcon;
     private readonly Icon? _appIcon;
     private readonly System.Windows.Forms.Timer _timer;
@@ -22,6 +23,7 @@ internal sealed class TrayApp : ApplicationContext
         Debug.WriteLine($"Settings: {_settings}");
 
         var menu = new ContextMenuStrip();
+        menu.Items.Add("Settings…", null, (_, _) => OpenSettings());
         menu.Items.Add("Exit", null, (_, _) => Exit());
 
         // Request the small-icon size so the matching frame is picked instead of a downscaled large one.
@@ -38,6 +40,7 @@ internal sealed class TrayApp : ApplicationContext
             Visible = true,
             ContextMenuStrip = menu
         };
+        _trayIcon.DoubleClick += (_, _) => OpenSettings();
 
         _timer = new System.Windows.Forms.Timer { Interval = 250 };
         _timer.Tick += OnTick;
@@ -52,9 +55,9 @@ internal sealed class TrayApp : ApplicationContext
         switch (action)
         {
             case IconAction.Hide:
-                if (_settings.Mode is HideMode.Icons or HideMode.Both)
+                if (_settings.Mode.HidesIcons())
                     DesktopIcons.Hide();
-                if (_settings.Mode is HideMode.Cursor or HideMode.Both)
+                if (_settings.Mode.HidesCursor())
                     SystemCursor.Hide();
                 _iconsHidden = true;
                 Debug.WriteLine("icons hidden");
@@ -75,6 +78,44 @@ internal sealed class TrayApp : ApplicationContext
         Debug.WriteLine(
             $"[{now:HH:mm:ss}] idle={(long)state.Idle.TotalMilliseconds}ms " +
             $"fg={state.ForegroundClass} desktop={IdleLogic.IsDesktopClass(state.ForegroundClass)} hidden={_iconsHidden}");
+    }
+
+    private void OpenSettings()
+    {
+        // Double-click on the tray icon can arrive while the modal dialog is already open.
+        if (_settingsForm != null)
+        {
+            _settingsForm.Activate();
+            return;
+        }
+
+        AppSettings? result;
+        using (_settingsForm = new SettingsForm(_settings) { Icon = _appIcon ?? SystemIcons.Application })
+        {
+            _settingsForm.ShowDialog();
+            result = _settingsForm.Result;
+        }
+        _settingsForm = null;
+
+        if (result == null)
+            return;
+
+        try
+        {
+            SettingsStore.Save(result);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Could not save settings: {ex.Message}", "IdleDesktop",
+                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        }
+
+        // Apply even if saving failed; the next tick decides again under the new rules.
+        _settings = result;
+        Debug.WriteLine($"Settings: {_settings}");
+        DesktopIcons.Show();
+        SystemCursor.Show();
+        _iconsHidden = false;
     }
 
     private void Exit()
