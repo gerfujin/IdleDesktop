@@ -6,8 +6,7 @@ A tiny Windows tray utility that hides desktop icons when you sit idle on the de
 
 ## Features
 
-- Hides desktop icons after 30 seconds of inactivity while the desktop (or taskbar) is the active window
-- Hides the mouse cursor together with the icons
+- Hides desktop icons and mouse cursor after 30 seconds of inactivity while the desktop (or taskbar) is the active window
 - Restores icons and cursor instantly on any mouse or keyboard input, whatever window is active
 - Runs quietly in the system tray; **Exit** in the tray menu restores icons and cursor before quitting
 - Only one instance can run at a time
