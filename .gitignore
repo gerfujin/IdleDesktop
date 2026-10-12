@@ -31,3 +31,5 @@ packages/
 Thumbs.db
 Desktop.ini
 .DS_Store
+
+/NewFile1.txt
