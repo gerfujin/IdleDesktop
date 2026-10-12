@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using IdleDesktop.Settings;
 
 namespace IdleDesktop;
 
@@ -8,8 +9,7 @@ namespace IdleDesktop;
 /// </summary>
 internal sealed class TrayApp : ApplicationContext
 {
-    private static readonly TimeSpan IdleThreshold = TimeSpan.FromSeconds(30);
-
+    private readonly AppSettings _settings;
     private readonly NotifyIcon _trayIcon;
     private readonly Icon? _appIcon;
     private readonly System.Windows.Forms.Timer _timer;
@@ -18,6 +18,9 @@ internal sealed class TrayApp : ApplicationContext
 
     public TrayApp()
     {
+        _settings = SettingsStore.Load();
+        Debug.WriteLine($"Settings: {_settings}");
+
         var menu = new ContextMenuStrip();
         menu.Items.Add("Exit", null, (_, _) => Exit());
 
@@ -45,12 +48,14 @@ internal sealed class TrayApp : ApplicationContext
     {
         var state = SystemState.Read();
 
-        var action = IdleLogic.Decide(state.Idle, IdleThreshold, state.ForegroundClass, _iconsHidden);
+        var action = IdleLogic.Decide(state.Idle, _settings.IdleThreshold, state.ForegroundClass, _iconsHidden);
         switch (action)
         {
             case IconAction.Hide:
-                DesktopIcons.Hide();
-                SystemCursor.Hide();
+                if (_settings.Mode is HideMode.Icons or HideMode.Both)
+                    DesktopIcons.Hide();
+                if (_settings.Mode is HideMode.Cursor or HideMode.Both)
+                    SystemCursor.Hide();
                 _iconsHidden = true;
                 Debug.WriteLine("icons hidden");
                 break;
